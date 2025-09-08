@@ -1,71 +1,35 @@
--- 1. Lista de transações com apenas 1 ponto;
-
-SELECT idcliente,
-        IdTransacao,
-        QtdePontos
-FROM transacoes
-WHERE QtdePontos = 1;
-
--- 2. Lista de pedidos realizados no fim de semana;
-
-SELECT IdTransacao,
-         IdCliente,
-         DtCriacao,
-         strftime('%w', datetime(substr(DtCriacao, 1, 19))) AS DiaSemana
-FROM transacoes
-WHERE DiaSemana IN ('0','6')
-ORDER BY DtCriacao DESC;
-
--- 3. Lista de clientes com 0 (zero) pontos;
-
-SELECT IdCliente,
-        QtdePontos
-FROM clientes
-WHERE QtdePontos = 0;
-
--- 4. Lista de clientes com 100 a 200 pontos (inclusive ambos);
-
-SELECT IdCliente,
-        QtdePontos
-FROM clientes
-WHERE QtdePontos BETWEEN 100 AND 200;
--- WHERE QtdePontos >= 100 AND QtdePontos <= 200
-
--- 5. Lista de produtos com nome que começa com “Venda de”;
+-- selecione todos os clientes
 
 SELECT *
-FROM produtos
-WHERE DescProduto LIKE 'Venda de%';
+FROM
+clientes
+--WHERE FlEmail = 1
+--WHERE FlEmail != 0
+WHERE FlEmail <> 0;
 
--- 6. Lista de produtos com nome que termina com “Lover”;
-
-SELECT *
-FROM produtos 
-WHERE DescProduto LIKE '%Lover';
-
--- 7. Lista de produtos que são “chapéu”;
+-- selecione todas as transações com QtdePontos maior que 50
 
 SELECT *
-FROM produtos
-WHERE DescProduto LIKE '%chapéu%';
+FROM
+transacoes
+WHERE QtdePontos > 50;
 
--- 8. Lista de transações com o produto “Resgatar Ponei”;
+-- selecione todos os clientes com mais de 500 pontos
 
-SELECT tp.IdTransacao,
-        p.IdProduto,
-        p.DescProduto
-FROM transacao_produto tp
-LEFT JOIN produtos p
-ON tp.IdProduto = p.IdProduto
-WHERE p.DescProduto = 'Resgatar Ponei';
+SELECT IdCliente, QtdePontos
+FROM
+clientes
+WHERE QtdePontos > 500
+ORDER BY QtdePontos;
 
--- 9. Listar todas as transações adicionando uma coluna nova sinalizando
--- “alto”, “médio” e “baixo” para o valor dos pontos [<10 ; <500; >=500]
+-- selecione produtos que possuem a palavra "churn" na DescProduto
 
-SELECT *,
-        CASE
-            WHEN QtdePontos < 10 THEN 'baixo'
-            WHEN QtdePontos < 500 THEN 'médio'
-            ELSE 'alto' 
-        END AS NivelPontos
-FROM transacoes
+SELECT *
+FROM
+produtos
+-- WHERE DescProduto = 'Churn_10pp'
+-- OR DescProduto = 'Churn_2pp'
+-- OR DescProduto = 'Churn_5pp'
+-- WHERE DescProduto IN ('Churn_10pp', 'Churn_2pp', 'Churn_5pp');
+-- WHERE DescProduto LIKE '%churn%'
+WHERE DescCateogriaProduto = 'churn_model'

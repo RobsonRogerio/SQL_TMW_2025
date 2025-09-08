@@ -1,6 +1,6 @@
 SELECT
 
-    avg(QtdePontos) as MediaPontos,
+    round(avg(QtdePontos)) as MediaPontos,
     1. * sum(QtdePontos) / count(IdCliente) as MediaPontosPorCliente,
     min(QtdePontos) as MinimoPontos,
     max(QtdePontos) as MaximoPontos,
