@@ -1,3 +1,6 @@
+
+-- Clientes que começaram o curso no dia 2025/08/25 e voltaram no último dia 2025/08/29
+
 SELECT count(DISTINCT IdCliente)
 
 FROM transacoes t1
