@@ -15,7 +15,6 @@
 
 --******************************************************************************--
 
-
 -- 1. Quantidade de transações históricas (vida, D7, D14, D28, D56);
 
 WITH tb_transacoes AS (
@@ -24,8 +23,9 @@ WITH tb_transacoes AS (
         IdTransacao,
         IdCliente,
         QtdePontos,
-        datetime(substr(DtCriacao, 1, 10)) AS dtCriacao,
-        round(julianday('now') - julianday(substr(DtCriacao,1,10)), 2) AS diffDate
+        datetime(substr(DtCriacao, 1, 19)) AS dtCriacao,
+        round(julianday('now') - julianday(substr(DtCriacao,1,10)), 2) AS diffDate,
+        cast(strftime('%H', substr(DtCriacao, 1, 19)) AS integer) as dtHora
     FROM transacoes
     ),
 
@@ -89,7 +89,7 @@ tb_transacao_produto AS (
 
 tb_cliente_produto AS (
 
-    -- 4. Produto mais usado (vida, D7, D14, D28, D56);
+    
     SELECT
         IdCliente,
         DescProduto,
@@ -117,8 +117,8 @@ tb_cliente_produto_rn AS (
     tb_cliente_produto
     ),
 
-tb_cliente_dia AS (
-    -- 8. Dias da semana mais ativos (D28)
+tb_cliente_dia AS ( 
+    
     SELECT
         IdCliente,
         strftime('%w', DtCriacao) AS dtDia,
@@ -128,7 +128,7 @@ tb_cliente_dia AS (
 
     WHERE diffDate <= 28
 
-    GROUP BY IdCliente, dtDia
+    GROUP BY IdCliente, dtDia -- 8. Dias da semana mais ativos (D28)
     ),
 
 tb_cliente_dia_rn AS (
@@ -138,6 +138,28 @@ tb_cliente_dia_rn AS (
     row_number() OVER (PARTITION BY IdCliente ORDER BY qtdeTransacoes DESC) as rnDia
 
     FROM tb_cliente_dia
+    ),
+
+tb_cliente_periodo AS (
+    SELECT     
+        IdCliente,
+        CASE
+            WHEN dtHora BETWEEN 7 AND 12 THEN 'MANHÃ'
+            WHEN dtHora BETWEEN 13 AND 18 THEN 'TARDE'
+            WHEN dtHora BETWEEN 19 AND 23 THEN 'NOITE'
+            ELSE 'MADRUGADA' 
+        END AS periodo, -- 9. Período do dia mais ativo (D28)
+        count(IdTransacao) AS qtdeTransacoes
+    FROM tb_transacoes
+    GROUP BY 1, 2
+    ),
+
+tb_cliente_periodo_rn AS (
+
+    SELECT
+    *,
+    row_number() OVER (PARTITION BY IdCliente ORDER BY qtdeTransacoes DESC) AS rnPeriodo 
+    FROM tb_cliente_periodo
     ),
 
 tb_join AS (
@@ -183,4 +205,4 @@ tb_join AS (
     AND t8.rnDia = 1
     )
 
-SELECT * FROM tb_join
+SELECT * FROM tb_cliente_periodo_rn
